@@ -41,4 +41,27 @@ export default class AuthController {
         .json({ message: 'Internal server error', error });
     }
   }
+
+  async logout({ response, auth }: HttpContext) {
+    try {
+      const user = auth.user!;
+      await User.accessTokens.delete(user, user.currentAccessToken.identifier);
+      return response.status(200).json({ message: 'Logged out successfully' });
+    } catch (error) {
+      return response
+        .status(500)
+        .json({ message: 'Internal server error', error });
+    }
+  }
+
+  async me({ response, auth }: HttpContext) {
+    try {
+      await auth.check();
+      return response.status(200).json({ user: auth.user });
+    } catch (error) {
+      return response
+        .status(500)
+        .json({ message: 'Internal server error', error });
+    }
+  }
 }
