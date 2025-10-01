@@ -3,7 +3,7 @@ import User from '#models/user';
 import { loginValidator, registerValidator } from '#validators/auth';
 
 export default class AuthController {
-  async login({ request, response, auth }: HttpContext) {
+  async login({ request, response }: HttpContext) {
     try {
       const { email, password } = await request.validateUsing(loginValidator);
       const user = await User.findBy('email', email);
@@ -17,7 +17,8 @@ export default class AuthController {
         return response.status(401).json({ message: 'Invalid credentials' });
       }
 
-      const token = await auth.use('api').createToken(user);
+      const token = await User.accessTokens.create(user);
+
       return response.status(200).json({ user, token });
     } catch (error) {
       return response
@@ -26,12 +27,12 @@ export default class AuthController {
     }
   }
 
-  async register({ request, response, auth }: HttpContext) {
+  async register({ request, response }: HttpContext) {
     try {
       const { email, password } =
         await request.validateUsing(registerValidator);
       const user = await User.create({ email, password });
-      const token = await auth.use('api').createToken(user);
+      const token = await User.accessTokens.create(user);
 
       return response.status(201).json({ user, token });
     } catch (error) {
